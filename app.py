@@ -1,26 +1,29 @@
+"""
+Streamlit Web App: Handwritten Digit Generator (MNIST Style, CVAE)
+Loads a trained CVAE and generates 5 diverse images for the selected digit.
+"""
+
 import streamlit as st
 import torch
 import torch.nn as nn
 import numpy as np
 
-# Model settings (must match training)
+# --- Model Settings (must match training) ---
 z_dim = 20
 num_classes = 10
 img_size = 28
 
-# CVAE model (decoder only)
+# --- Model Definition: Full CVAE (matches train.py) ---
 class CVAE(nn.Module):
     def __init__(self):
         super().__init__()
         self.embed = nn.Embedding(num_classes, 10)
-        # Encoder
         self.encoder = nn.Sequential(
             nn.Linear(img_size*img_size + 10, 400),
             nn.ReLU(),
         )
         self.fc_mu = nn.Linear(400, z_dim)
         self.fc_logvar = nn.Linear(400, z_dim)
-        # Decoder
         self.decoder = nn.Sequential(
             nn.Linear(z_dim + 10, 400),
             nn.ReLU(),
@@ -34,8 +37,7 @@ class CVAE(nn.Module):
         x_recon = self.decoder(h)
         return x_recon.view(-1, 1, img_size, img_size)
 
-
-# Load trained weights
+# --- Load Model Helper ---
 @st.cache_resource
 def load_model():
     model = CVAE()
@@ -43,9 +45,12 @@ def load_model():
     model.eval()
     return model
 
+# --- Streamlit UI ---
 model = load_model()
 
 st.title("Handwritten Digit Generator (MNIST style, CVAE)")
+st.markdown("Generate 5 diverse MNIST-style images for the digit of your choice.")
+
 digit = st.selectbox("Select digit to generate", list(range(10)))
 
 if st.button("Generate 5 images"):
@@ -53,6 +58,6 @@ if st.button("Generate 5 images"):
         z = torch.randn(5, z_dim)
         labels = torch.full((5,), digit, dtype=torch.long)
         imgs = model.decode(z, labels).cpu().numpy()
-        imgs = (imgs * 255).astype(np.uint8)
+        imgs = (imgs * 255).astype(np.uint8)  # convert from [0,1] to [0,255] for display
     st.write(f"5 samples of digit: {digit}")
     st.image([img[0] for img in imgs], width=96, caption=[f"{digit} #{i+1}" for i in range(5)])
