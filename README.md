@@ -12,7 +12,7 @@ This project is a web app that generates images of handwritten digits (0–9) in
 
 ## Demo
 
-Access the app here: [Your Streamlit Cloud Link](https://share.streamlit.io/your-username/your-repo/main/app.py)
+Access the app here: [Your Streamlit Cloud Link](https://handwritten-gan-hridai.streamlit.app/)
 
 ## Files
 
